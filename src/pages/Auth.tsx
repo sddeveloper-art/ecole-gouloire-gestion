@@ -2,13 +2,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import LoginForm from '@/components/auth/LoginForm';
 import { Loader2 } from 'lucide-react';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const Auth = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -22,11 +19,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
+  // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>;
+  return <LoginForm />;
 };
 
-export default ProtectedRoute;
+export default Auth;

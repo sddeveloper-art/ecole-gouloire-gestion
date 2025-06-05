@@ -1,10 +1,11 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error?: string }>;
@@ -23,47 +24,30 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth event:', event, session);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session);
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        // Log authentication events
-        if (event === 'SIGNED_IN') {
-          logAuthEvent('CONNEXION', session?.user?.email || 'Unknown');
-        } else if (event === 'SIGNED_OUT') {
-          logAuthEvent('DECONNEXION', user?.email || 'Unknown');
-        } else if (event === 'SIGNED_UP') {
-          logAuthEvent('INSCRIPTION', session?.user?.email || 'Unknown');
-        }
-      }
-    );
-
     return () => subscription.unsubscribe();
-  }, [user?.email]);
-
-  const logAuthEvent = async (action: string, userEmail: string) => {
-    try {
-      await supabase.from('admin_logs').insert({
-        action,
-        user_email: userEmail,
-        timestamp: new Date().toISOString(),
-        details: `${action} administrateur`
-      });
-    } catch (error) {
-      console.error('Erreur lors de la journalisation:', error);
-    }
-  };
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -78,19 +62,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return {};
     } catch (error) {
+      console.error('Erreur de connexion:', error);
       return { error: 'Erreur de connexion' };
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
-            role: 'admin'
           }
         }
       });
@@ -101,16 +88,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return {};
     } catch (error) {
+      console.error('Erreur lors de la création du compte:', error);
       return { error: 'Erreur lors de la création du compte' };
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
   };
 
   const value = {
     user,
+    session,
     loading,
     signIn,
     signUp,

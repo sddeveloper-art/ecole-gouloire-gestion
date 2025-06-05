@@ -1,34 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// For Lovable integration, these will be automatically provided
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = 'https://ybafrqbmayanwsfhgrvf.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliYWZycWJtYXlhbndzZmhncnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNjAxMTksImV4cCI6MjA2NDYzNjExOX0.KZdvbG8NW9CMKldcv_pK7-tICLScnbcixh0k0efeCNY';
 
-// Create supabase client with appropriate configuration
-let supabaseClient;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables not found. Please ensure Supabase integration is properly configured.');
-  
-  // Create a mock client for development
-  supabaseClient = createClient(
-    'https://placeholder.supabase.co',
-    'placeholder-key',
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  );
-} else {
-  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-}
-
-export const supabase = supabaseClient;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
