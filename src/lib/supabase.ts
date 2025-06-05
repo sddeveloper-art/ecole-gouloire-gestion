@@ -1,4 +1,5 @@
 
+
 import { createClient } from '@supabase/supabase-js';
 
 // For Lovable integration, these will be automatically provided
@@ -28,3 +29,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
     },
   });
 }
+
