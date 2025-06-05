@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -42,6 +43,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logAuthEvent('CONNEXION', session?.user?.email || 'Unknown');
         } else if (event === 'SIGNED_OUT') {
           logAuthEvent('DECONNEXION', user?.email || 'Unknown');
+        } else if (event === 'SIGNED_UP') {
+          logAuthEvent('INSCRIPTION', session?.user?.email || 'Unknown');
         }
       }
     );
@@ -79,6 +82,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: 'admin'
+          }
+        }
+      });
+
+      if (error) {
+        return { error: error.message };
+      }
+
+      return {};
+    } catch (error) {
+      return { error: 'Erreur lors de la création du compte' };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -87,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     signIn,
+    signUp,
     signOut,
   };
 

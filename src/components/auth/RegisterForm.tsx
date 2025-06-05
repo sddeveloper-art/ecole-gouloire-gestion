@@ -6,23 +6,38 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, School, UserPlus } from 'lucide-react';
-import RegisterForm from './RegisterForm';
+import { Lock, Mail, School, User, ArrowLeft } from 'lucide-react';
 
-const LoginForm = () => {
+interface RegisterFormProps {
+  onBackToLogin: () => void;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const { error } = await signUp(email, password, fullName);
 
     if (error) {
       setError(error);
@@ -30,10 +45,6 @@ const LoginForm = () => {
 
     setLoading(false);
   };
-
-  if (showRegister) {
-    return <RegisterForm onBackToLogin={() => setShowRegister(false)} />;
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -46,7 +57,7 @@ const LoginForm = () => {
           </div>
           <CardTitle className="text-2xl font-bold">EcoleManager</CardTitle>
           <CardDescription>
-            Connexion Administrateur
+            Créer un compte administrateur
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -57,6 +68,22 @@ const LoginForm = () => {
               </Alert>
             )}
             
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Nom complet</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Jean Dupont"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -89,23 +116,39 @@ const LoginForm = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+
             <Button 
               type="submit" 
               className="w-full" 
               disabled={loading}
             >
-              {loading ? 'Connexion...' : 'Se connecter'}
+              {loading ? 'Création du compte...' : 'Créer le compte'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <Button
               variant="ghost"
-              onClick={() => setShowRegister(true)}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              onClick={onBackToLogin}
+              className="text-sm text-gray-600 hover:text-gray-800"
             >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Créer un nouveau compte administrateur
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour à la connexion
             </Button>
           </div>
 
@@ -118,4 +161,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;
