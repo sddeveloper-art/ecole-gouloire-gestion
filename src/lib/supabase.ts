@@ -1,17 +1,18 @@
 
-
 import { createClient } from '@supabase/supabase-js';
 
 // For Lovable integration, these will be automatically provided
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// If running in development without env vars, provide fallback
+// Create supabase client with appropriate configuration
+let supabaseClient;
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase environment variables not found. Please ensure Supabase integration is properly configured.');
   
   // Create a mock client for development
-  export const supabase = createClient(
+  supabaseClient = createClient(
     'https://placeholder.supabase.co',
     'placeholder-key',
     {
@@ -22,7 +23,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
     }
   );
 } else {
-  export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -30,3 +31,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
   });
 }
 
+export const supabase = supabaseClient;
