@@ -6,18 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, School, User, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, School, User, ArrowLeft, CheckCircle } from 'lucide-react';
 
 interface RegisterFormProps {
   onBackToLogin: () => void;
+  onRegistrationSuccess?: (email: string) => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onRegistrationSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
 
@@ -41,10 +43,57 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin }) => {
 
     if (error) {
       setError(error);
+      setLoading(false);
+    } else {
+      setSuccess(true);
+      setLoading(false);
+      
+      // Attendre 3 secondes puis rediriger vers la connexion
+      setTimeout(() => {
+        if (onRegistrationSuccess) {
+          onRegistrationSuccess(email);
+        } else {
+          onBackToLogin();
+        }
+      }, 3000);
     }
-
-    setLoading(false);
   };
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-green-800">Inscription réussie !</CardTitle>
+            <CardDescription>
+              Votre compte a été créé avec succès
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Votre compte administrateur a été créé avec succès. Vous allez être redirigé vers la page de connexion dans quelques secondes.
+              </AlertDescription>
+            </Alert>
+            
+            <Button 
+              onClick={() => onRegistrationSuccess ? onRegistrationSuccess(email) : onBackToLogin()}
+              className="mt-4 w-full"
+              variant="outline"
+            >
+              Se connecter maintenant
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">

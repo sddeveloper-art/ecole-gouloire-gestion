@@ -6,11 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, School, UserPlus } from 'lucide-react';
+import { Lock, Mail, School, UserPlus, CheckCircle } from 'lucide-react';
 import RegisterForm from './RegisterForm';
 
-const LoginForm = () => {
-  const [email, setEmail] = useState('');
+interface LoginFormProps {
+  registrationSuccess?: boolean;
+  userEmail?: string;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ registrationSuccess, userEmail }) => {
+  const [email, setEmail] = useState(userEmail || '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,7 +37,15 @@ const LoginForm = () => {
   };
 
   if (showRegister) {
-    return <RegisterForm onBackToLogin={() => setShowRegister(false)} />;
+    return (
+      <RegisterForm 
+        onBackToLogin={() => setShowRegister(false)}
+        onRegistrationSuccess={(email) => {
+          setShowRegister(false);
+          setEmail(email);
+        }}
+      />
+    );
   }
 
   return (
@@ -50,6 +63,15 @@ const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {registrationSuccess && (
+            <Alert className="mb-4 border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Inscription réussie ! Vous pouvez maintenant vous connecter avec vos identifiants.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert variant="destructive">
