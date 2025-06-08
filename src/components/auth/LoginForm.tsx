@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, School, UserPlus, CheckCircle } from 'lucide-react';
+import { Lock, Mail, School, UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
 import RegisterForm from './RegisterForm';
 
 interface LoginFormProps {
@@ -20,17 +20,27 @@ const LoginForm: React.FC<LoginFormProps> = ({ registrationSuccess, userEmail })
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
   const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNeedsEmailConfirmation(false);
     setLoading(true);
 
     const { error } = await signIn(email, password);
 
     if (error) {
-      setError(error);
+      // Vérifier si l'erreur est liée à l'email non confirmé
+      if (error.includes('Email not confirmed') || error.includes('email_not_confirmed')) {
+        setNeedsEmailConfirmation(true);
+        setError('Votre email n\'a pas encore été confirmé. Veuillez vérifier votre boîte mail et cliquer sur le lien de confirmation.');
+      } else if (error.includes('Invalid login credentials')) {
+        setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
+      } else {
+        setError(error);
+      }
     }
 
     setLoading(false);
@@ -67,13 +77,29 @@ const LoginForm: React.FC<LoginFormProps> = ({ registrationSuccess, userEmail })
             <Alert className="mb-4 border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                Inscription réussie ! Vous pouvez maintenant vous connecter avec vos identifiants.
+                Inscription réussie ! Vérifiez votre email pour confirmer votre compte, puis connectez-vous.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {needsEmailConfirmation && (
+            <Alert className="mb-4 border-orange-200 bg-orange-50">
+              <AlertCircle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                <div className="space-y-2">
+                  <p>Votre compte existe mais votre email n'est pas confirmé.</p>
+                  <p className="text-sm">
+                    1. Vérifiez votre boîte mail (et vos spams)<br/>
+                    2. Cliquez sur le lien de confirmation<br/>
+                    3. Revenez ici pour vous connecter
+                  </p>
+                </div>
               </AlertDescription>
             </Alert>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
+            {error && !needsEmailConfirmation && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -133,6 +159,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ registrationSuccess, userEmail })
 
           <div className="mt-4 text-center text-sm text-gray-500">
             <p>Accès réservé aux administrateurs autorisés</p>
+            {needsEmailConfirmation && (
+              <p className="mt-2 text-xs text-orange-600">
+                Problème avec l'email de confirmation ? Contactez l'administrateur système.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

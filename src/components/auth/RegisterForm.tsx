@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Mail, School, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Lock, Mail, School, User, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface RegisterFormProps {
   onBackToLogin: () => void;
@@ -42,7 +42,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onRegistrati
     const { error } = await signUp(email, password, fullName);
 
     if (error) {
-      setError(error);
+      if (error.includes('already registered')) {
+        setError('Cette adresse email est déjà utilisée. Essayez de vous connecter.');
+      } else {
+        setError(error);
+      }
       setLoading(false);
     } else {
       setSuccess(true);
@@ -75,19 +79,29 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onRegistrati
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Votre compte administrateur a été créé avec succès. Vous allez être redirigé vers la page de connexion dans quelques secondes.
+            <Alert className="border-blue-200 bg-blue-50 mb-4">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <div className="text-left space-y-2">
+                  <p className="font-semibold">Étapes suivantes :</p>
+                  <ol className="list-decimal list-inside space-y-1 text-sm">
+                    <li>Vérifiez votre boîte mail : <strong>{email}</strong></li>
+                    <li>Cliquez sur le lien de confirmation dans l'email</li>
+                    <li>Revenez ici pour vous connecter</li>
+                  </ol>
+                  <p className="text-xs mt-2 text-blue-600">
+                    N'oubliez pas de vérifier vos spams !
+                  </p>
+                </div>
               </AlertDescription>
             </Alert>
             
             <Button 
               onClick={() => onRegistrationSuccess ? onRegistrationSuccess(email) : onBackToLogin()}
-              className="mt-4 w-full"
+              className="w-full"
               variant="outline"
             >
-              Se connecter maintenant
+              Aller à la page de connexion
             </Button>
           </CardContent>
         </Card>
@@ -203,6 +217,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onRegistrati
 
           <div className="mt-4 text-center text-sm text-gray-500">
             <p>Accès réservé aux administrateurs autorisés</p>
+            <p className="text-xs mt-1">
+              Un email de confirmation sera envoyé après l'inscription
+            </p>
           </div>
         </CardContent>
       </Card>
