@@ -9,6 +9,9 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Schedule from "./pages/Schedule";
+import Students from "./pages/Students";
+import Teachers from "./pages/Teachers";
+import Grades from "./pages/Grades";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -39,6 +42,27 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Schedule />} />
+            </Route>
+            <Route path="/students" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Students />} />
+            </Route>
+            <Route path="/teachers" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Teachers />} />
+            </Route>
+            <Route path="/grades" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Grades />} />
             </Route>
             <Route path="/test-database" element={
               <ProtectedRoute>
