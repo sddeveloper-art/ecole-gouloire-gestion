@@ -12,6 +12,7 @@ import Schedule from "./pages/Schedule";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import TestDatabase from "./pages/TestDatabase";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,13 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Schedule />} />
+            </Route>
+            <Route path="/test-database" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<TestDatabase />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
