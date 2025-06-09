@@ -32,7 +32,7 @@ const TestDatabase = () => {
         'student_payments',
         'events',
         'notifications'
-      ];
+      ] as const;
 
       const statuses: TableStatus[] = [];
 
