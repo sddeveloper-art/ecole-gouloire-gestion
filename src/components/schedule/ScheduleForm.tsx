@@ -52,7 +52,15 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onSubmit, onCance
     }
   }, [schedule, reset]);
 
-  const daysOfWeek = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  const daysOfWeek = {
+    1: 'Lundi',
+    2: 'Mardi', 
+    3: 'Mercredi',
+    4: 'Jeudi',
+    5: 'Vendredi',
+    6: 'Samedi',
+    7: 'Dimanche'
+  };
 
   const groupedTimeSlots = timeSlots.reduce((acc, slot) => {
     const day = slot.day_of_week;
@@ -152,10 +160,12 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({ schedule, onSubmit, onCance
                 <SelectValue placeholder="Sélectionner un créneau" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(groupedTimeSlots).map(([day, slots]) => (
+                {Object.entries(groupedTimeSlots)
+                  .filter(([day]) => parseInt(day) >= 1 && parseInt(day) <= 7)
+                  .map(([day, slots]) => (
                   <div key={day}>
                     <div className="px-2 py-1 text-sm font-semibold text-gray-500 bg-gray-100">
-                      {daysOfWeek[parseInt(day)]}
+                      {daysOfWeek[parseInt(day) as keyof typeof daysOfWeek]}
                     </div>
                     {slots.map((slot) => (
                       <SelectItem key={slot.id} value={slot.id}>
